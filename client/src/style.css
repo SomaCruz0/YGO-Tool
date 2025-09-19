@@ -1,0 +1,326 @@
+/* create: client/src/styles.css */
+:root {
+  --bg: #0b1020;
+  --card: #111935;
+  --muted: #9aa4c1;
+  --text: #e8ecf8;
+  --brand: #6ea8fe;
+  --brand-2: #61dafb;
+  --danger: #ff6b6b;
+  --border: #223058;
+  --ring: #2b3f7a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: radial-gradient(1200px 800px at 10% -10%, #18244d, transparent),
+    radial-gradient(1000px 700px at 110% 10%, #132147, transparent),
+    var(--bg);
+  color: var(--text);
+  font: 14px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 20px 56px;
+}
+
+.header h1 {
+  margin: 0 0 6px 0;
+  font-size: 28px;
+  letter-spacing: 0.2px;
+}
+
+.subtitle {
+  margin: 0 0 24px 0;
+  color: var(--muted);
+}
+
+.tab-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tab.active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+  background: rgba(110, 168, 254, 0.1);
+}
+
+.search {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #bcc7e6;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+}
+
+.input {
+  flex: 1;
+  background: #0e1530;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(110, 168, 254, .2);
+}
+
+.button {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #0c1226;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .05s ease, filter .2s ease, opacity .2s;
+}
+
+.button:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.hint {
+  margin: 10px 2px 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.alert {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #5b2630;
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.alert.error {
+  color: var(--danger);
+}
+
+.card {
+  margin-top: 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.card-title {
+  margin: 0;
+  padding: 16px 16px 0 16px;
+  font-size: 18px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  padding: 16px;
+}
+
+.field {
+  background: #0b1330;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.field-label {
+  display: block;
+  color: #a7b3d8;
+  font-size: 12px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.field-value {
+  font-size: 14px;
+}
+
+.field-value.code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.field-value.price {
+  color: #8be98b;
+  font-weight: 700;
+}
+
+.placeholder {
+  margin-top: 16px;
+  color: var(--muted);
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.table-wrap {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow-x: auto;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table thead th {
+  text-align: left;
+  background: #0d1838;
+  color: #c9d3ef;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+}
+
+.table tbody td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+  vertical-align: top;
+}
+
+.table tbody tr:nth-child(even) td {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.price-cell {
+  white-space: nowrap;
+  font-weight: 700;
+  color: #8be98b;
+}
+
+.error-row {
+  color: var(--danger);
+  background: rgba(255, 107, 107, 0.06);
+}
+
+.image-cell {
+  text-align: center;
+  width: 120px;
+}
+
+.image-cell img {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Cột mã sản phẩm */
+.table tbody td:nth-child(3) {
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 600;
+  color: var(--brand);
+  width: 100px;
+}
+
+/* Cột tên nhóm phân loại */
+.table tbody td:nth-child(4) {
+  text-align: center;
+  font-weight: 600;
+  color: var(--muted);
+  width: 150px;
+}
+
+/* Cột tên phân loại */
+.table tbody td:nth-child(5) {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text);
+  width: 200px;
+}
+
+/* Cột hình ảnh mỗi phân loại */
+.table tbody td:nth-child(6) {
+  text-align: center;
+  width: 120px;
+}
+
+/* Cột sản phẩm - tăng chiều rộng */
+.table tbody td:nth-child(1) {
+  min-width: 250px;
+}
+
+/* Cột mô tả - tăng chiều rộng */
+.table tbody td:nth-child(2) {
+  min-width: 300px;
+}
+
+/* Cột giá - kế cuối */
+.table tbody td:nth-child(7) {
+  width: 120px;
+  text-align: right;
+}
+
+/* Cột hình ảnh - cuối cùng */
+.table tbody td:nth-child(8) {
+  text-align: center;
+  width: 120px;
+}

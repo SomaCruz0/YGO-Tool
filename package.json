@@ -1,0 +1,19 @@
+{
+    "name": "ygo-tool",
+    "version": "1.0.0",
+    "description": "YGO Tool with client and server",
+    "scripts": {
+        "dev:client": "cd client && npm run dev",
+        "dev:server": "cd server && npm run dev",
+        "build": "cd client && npm install && npm run build",
+        "start": "cd server && npm start",
+        "install:all": "cd client && npm install && cd ../server && npm install",
+        "build:deploy": "npm run install:all && npm run build"
+    },
+    "keywords": [
+        "yugioh",
+        "trading-cards"
+    ],
+    "author": "",
+    "license": "ISC"
+}
