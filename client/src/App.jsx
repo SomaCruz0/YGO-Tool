@@ -65,7 +65,7 @@ function App() {
     // Resolve print code via server to { id, name, exactSetCode }
     const resolveNameFromPrintCode = async (rawInput) => {
         const input = normalizePrintCode(rawInput)
-        const r = await fetch(`${__API_URL__}/api/printcode/resolve?code=${encodeURIComponent(input)}`)
+        const r = await fetch(`${__API_URL__}/printcode/resolve?code=${encodeURIComponent(input)}`)
         if (!r.ok) throw new Error(`HTTP ${r.status} resolving ${input}`)
         const json = await r.json()
         if (!json?.ok || !json?.name) throw new Error('Không lấy được name từ server')
