@@ -65,7 +65,7 @@ function App() {
     // Resolve print code via server to { id, name, exactSetCode }
     const resolveNameFromPrintCode = async (rawInput) => {
         const input = normalizePrintCode(rawInput)
-        const r = await fetch(`${__API_URL__}/printcode/resolve?code=${encodeURIComponent(input)}`)
+        const r = await fetch(`${__API_URL__}/api/printcode/resolve?code=${encodeURIComponent(input)}`)
         if (!r.ok) throw new Error(`HTTP ${r.status} resolving ${input}`)
         const json = await r.json()
         if (!json?.ok || !json?.name) throw new Error('Không lấy được name từ server')
@@ -108,7 +108,7 @@ function App() {
 
                 // 2) Query JustTCG by resolved name and map variants (prices) per matching card number/code
                 const setcodeFilter = resolved.exactSetCode || code
-                const jt = await fetch(`${__API_URL__}/justtcg/cards?name=${encodeURIComponent(resolved.name)}`)
+                const jt = await fetch(`${__API_URL__}/api/justtcg/cards?name=${encodeURIComponent(resolved.name)}`)
                 if (!jt.ok) {
                     allResults.push({ ok: true, setcode: setcodeFilter, data: { source: 'ygoresources', id: resolved.id, name: resolved.name, set_code: setcodeFilter } })
                     continue
@@ -229,7 +229,7 @@ function App() {
         setAeLoading(true)
         setAeError(null)
         try {
-            const res = await fetch(`${__API_URL__}/cardsetsinfo?setcode=${encodeURIComponent(codes.join(','))}`)
+            const res = await fetch(`${__API_URL__}/api/cardsetsinfo?setcode=${encodeURIComponent(codes.join(','))}`)
             if (!res.ok) throw new Error(`HTTP ${res.status}`)
             const json = await res.json()
 
@@ -722,7 +722,7 @@ function App() {
                                 try {
                                     const rows = []
                                     for (const h of handles) {
-                                        const r = await fetch(`${__API_URL__}/tcg-corner/product?q=${encodeURIComponent(h)}`)
+                                        const r = await fetch(`${__API_URL__}/api/tcg-corner/product?q=${encodeURIComponent(h)}`)
                                         if (!r.ok) {
                                             rows.push({ ok: false, setcode: h, status: r.status, error: 'Fetch product .js failed' })
                                             continue

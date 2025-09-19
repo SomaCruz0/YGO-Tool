@@ -6,6 +6,32 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Helper function to get TCG Corner headers with Vietnam region forcing
+const getTCGCornerHeaders = () => {
+    // Rotate Vietnam IPs to avoid detection
+    const vietnamIPs = [
+        '14.187.53.1',    // Viettel
+        '125.212.226.1',  // VNPT
+        '171.224.176.1',  // FPT
+        '103.9.76.1',     // CMC
+        '210.245.31.1'    // SPT
+    ];
+    const randomIP = vietnamIPs[Math.floor(Math.random() * vietnamIPs.length)];
+
+    console.log(`🇻🇳 Using Vietnam IP: ${randomIP} for TCG Corner request`);
+
+    return {
+        'accept': 'application/json',
+        'referer': 'https://tcg-corner.com/',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'accept-language': 'vi-VN,vi;q=0.9,en;q=0.8',
+        'x-forwarded-for': randomIP,
+        'x-real-ip': randomIP,
+        'cf-ipcountry': 'VN',
+        'x-country-code': 'VN'
+    };
+};
+
 app.get('/api/health', (req, res) => {
     console.log(`API listening on http://localhost:${port}`);
     res.json({ ok: true });
@@ -108,11 +134,7 @@ app.get('/api/cardsetsinfo', async (req, res) => {
                     for (const endpoint of endpoints) {
                         try {
                             tcgResponse = await fetch(endpoint, {
-                                headers: {
-                                    'accept': 'application/json',
-                                    'referer': 'https://tcg-corner.com/',
-                                    'user-agent': 'Mozilla/5.0'
-                                }
+                                headers: getTCGCornerHeaders()
                             });
 
                             if (tcgResponse.ok) {
@@ -130,11 +152,7 @@ app.get('/api/cardsetsinfo', async (req, res) => {
                                         for (const product of products.slice(0, 5)) { // Limit to first 5 products
                                             try {
                                                 const productResponse = await fetch(`https://tcg-corner.com/products/${product.handle}.json`, {
-                                                    headers: {
-                                                        'accept': 'application/json',
-                                                        'referer': 'https://tcg-corner.com/',
-                                                        'user-agent': 'Mozilla/5.0'
-                                                    }
+                                                    headers: getTCGCornerHeaders()
                                                 });
 
                                                 if (productResponse.ok) {
@@ -236,12 +254,7 @@ app.get('/api/tcg/search', async (req, res) => {
     try {
         const url = `https://tcg-corner.com/search/suggest.json?q=${encodeURIComponent(q)}&resources[type]=product&resources[limit]=10`
         const r = await fetch(url, {
-            headers: {
-                'accept': 'application/json',
-                // một số shop yêu cầu header này để trả đầy đủ dữ liệu
-                'referer': 'https://tcg-corner.com/',
-                'user-agent': 'Mozilla/5.0'
-            }
+            headers: getTCGCornerHeaders()
         })
         if (!r.ok) {
             const detail = await r.text().catch(() => '')
@@ -274,7 +287,7 @@ app.get('/api/tcg/search', async (req, res) => {
         }
 
         // Fetch detailed product JSON to get full variants (rarities)
-        const headers = { 'accept': 'application/json', 'referer': 'https://tcg-corner.com/', 'user-agent': 'Mozilla/5.0' }
+        const headers = getTCGCornerHeaders()
         const detailedProducts = await Promise.all(baseProducts.slice(0, 10).map(async (p) => {
             try {
                 const pr = await fetch(`https://tcg-corner.com/products/${p.handle}.json`, { headers })
@@ -350,9 +363,8 @@ app.get('/api/tcg-corner/product', async (req, res) => {
         const jsUrl = `https://tcg-corner.com/products/${encodeURIComponent(handle)}.js`
         const r = await fetch(jsUrl, {
             headers: {
-                'accept': 'application/javascript, application/json',
-                'referer': 'https://tcg-corner.com/',
-                'user-agent': 'Mozilla/5.0'
+                ...getTCGCornerHeaders(),
+                'accept': 'application/javascript, application/json'
             }
         })
         if (!r.ok) {
