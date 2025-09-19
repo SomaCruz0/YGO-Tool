@@ -200,7 +200,7 @@ app.get('/api/cardsetsinfo', async (req, res) => {
                             id: productData.id,
                             title: productData.title,
                             handle: productData.handle,
-                            price: productData.price || productData.variants?.[0]?.price,
+                            price: productData.price * 20540 || productData.variants?.[0]?.price * 20540,
                             price_min: productData.price_min || productData.price,
                             price_max: productData.price_max || productData.price,
                             available: productData.available !== undefined ? productData.available :
