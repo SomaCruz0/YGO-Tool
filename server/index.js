@@ -222,7 +222,7 @@ app.get('/api/cardsetsinfo', async (req, res) => {
                             set_code: code,
                             set_name: 'TCG Corner Search',
                             set_rarity: 'Various',
-                            set_price: products[0]?.price || 'N/A',
+                            set_price: products[0]?.price * 20540 || 'N/A',
                             source: 'tcg-corner',
                             currency: 'VND',
                             products: products
