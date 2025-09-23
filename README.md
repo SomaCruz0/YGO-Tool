@@ -24,7 +24,7 @@
   - `PSER` → Prismatic Secret Rare
   - `UL` → Ultimate Rare
   - `P-N` → Normal Parallel
-  - `QCSR` → Quartet Century Secret Rare
+  - `QCSR` → Quarter Century Secret Rare
 
 ### 📊 Hiển thị dữ liệu phong phú
 - **Thông tin chi tiết**: Hiển thị tên sản phẩm, mô tả, hình ảnh và giá
