@@ -200,7 +200,7 @@ app.get('/api/cardsetsinfo', async (req, res) => {
                             id: productData.id,
                             title: productData.title,
                             handle: productData.handle,
-                            price: productData.price * 20540 || productData.variants?.[0]?.price * 20540,
+                            price: productData.price || productData.variants?.[0]?.price * 20540,
                             price_min: productData.price_min || productData.price,
                             price_max: productData.price_max || productData.price,
                             available: productData.available !== undefined ? productData.available :
@@ -417,14 +417,21 @@ app.get('/api/justtcg/cards', async (req, res) => {
         if (!name) return res.status(400).json({ error: 'Missing name' })
 
         const apiKey = process.env.JUSTTCG_KEY
-        const base = 'https://api.justtcg.com/v1/cards'
+        if (!apiKey) {
+            return res.status(500).json({ error: 'Missing JUSTTCG_KEY in environment' })
+        }
+
+        const base = process.env.JUSTTCG_BASE || 'https://api.justtcg.com/v1/cards'
 
         // Try common search param names
-        // The docs show one high-performance /cards endpoint that supports search
         const candidates = [
             `${base}?q=${encodeURIComponent(name)}`,
             `${base}?name=${encodeURIComponent(name)}`
         ]
+
+        // 10s timeout guard
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10000)
 
         let lastErr = null
         for (const url of candidates) {
@@ -432,21 +439,25 @@ app.get('/api/justtcg/cards', async (req, res) => {
                 const r = await fetch(url, {
                     headers: {
                         'X-API-Key': apiKey,
-                        'accept': 'application/json'
-                    }
+                        'accept': 'application/json',
+                        'user-agent': 'YGO-Tool/1.0 (+server)'
+                    },
+                    signal: controller.signal
                 })
                 const text = await r.text()
                 let json
                 try { json = JSON.parse(text) } catch { json = { raw: text } }
                 if (!r.ok) {
-                    lastErr = { status: r.status, body: json }
+                    lastErr = { status: r.status, body: json, url }
                     continue
                 }
+                clearTimeout(timeout)
                 return res.json(json)
             } catch (e) {
-                lastErr = { error: String(e) }
+                lastErr = { error: String(e), url }
             }
         }
+        clearTimeout(timeout)
         return res.status(502).json({ error: 'Upstream JustTCG error', detail: lastErr })
     } catch (err) {
         return res.status(500).json({ error: 'Server error', detail: String(err) })

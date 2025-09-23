@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import * as XLSX from 'xlsx'
+import AEForm from './components/AEForm'
+import TCGForm from './components/TCGForm'
+import ResultsTable from './components/ResultsTable'
 
 function App() {
     const [setcodes, setSetcodes] = useState('')
@@ -163,19 +166,28 @@ function App() {
                         return
                     }
 
-                    // Group variants by rarity+printing and keep the lowest price (avoid duplicate rows)
+                    // Group variants by rarity+printing and pick best by preference (Near Mint + English), else lowest price
                     const groups = new Map()
+                    const isPreferred = (variant) => {
+                        const cond = String(variant?.condition || '').toLowerCase()
+                        const lang = String(variant?.language || '').toLowerCase()
+                        const condOk = cond.includes('near mint') || cond === 'nm'
+                        const langOk = lang === 'english' || lang === 'en'
+                        return condOk && langOk
+                    }
                     variants.forEach(v => {
                         const printing = v?.printing || ''
                         const key = `${baseRarity || ''}|${printing}`
                         const price = typeof v?.price === 'number' ? v.price : Number.POSITIVE_INFINITY
+                        const preferred = isPreferred(v)
                         const chosen = groups.get(key)
-                        if (!chosen || price < chosen.price) {
-                            groups.set(key, {
-                                printing,
-                                price,
-                                sample: v // keep a sample for condition/language if needed
-                            })
+                        if (!chosen) {
+                            groups.set(key, { printing, price, preferred, sample: v })
+                            return
+                        }
+                        // Prefer preferred variants; if tie on preference, pick lower price
+                        if ((preferred && !chosen.preferred) || (preferred === chosen.preferred && price < chosen.price)) {
+                            groups.set(key, { printing, price, preferred, sample: v })
                         }
                     })
 
@@ -521,7 +533,7 @@ function App() {
                     'Mã sản phẩm': isMultiRarityForSet ? extractProductCode(d.set_code) : '',
                     'Tên nhóm phân loại hàng 1': isMultiRarityForSet ? 'Rarity' : '',
                     'Tên phân loại hàng cho nhóm phân loại hàng 1': isMultiRarityForSet ? (d.rarity || '-') : '',
-                    'Hình ảnh mỗi phân loại': d.card_image || '',
+                    'Hình ảnh mỗi phân loại': isMultiRarityForSet ? (d.card_image || '') : '',
                     'Cột trống 2': '',
                     'Cột trống 3': '',
                     'Giá': price,
@@ -671,136 +683,79 @@ function App() {
 
             {/* AE Cards Form */}
             {activeTab === 'ae' && (
-                <form className="search" onSubmit={fetchInfo}>
-                    <div className="controls">
-                        <input
-                            id="setcodes"
-                            className="input"
-                            value={setcodes}
-                            onChange={(e) => setSetcodes(e.target.value)}
-                            placeholder="e.g. ALIN-AE002, DUAD-AE001"
-                            autoComplete="off"
-                        />
-                        <button type="submit" className="button" disabled={aeLoading}>
-                            {aeLoading ? 'Loading...' : 'Search'}
-                        </button>
-                    </div>
-                    <div className="controls" style={{ marginTop: '8px' }}>
-                        <input
-                            id="aePriceExtra"
-                            className="input"
-                            style={{ maxWidth: '220px' }}
-                            value={aePriceExtra}
-                            onChange={(e) => setAePriceExtra(e.target.value)}
-                            placeholder="Add price (bulk)"
-                            autoComplete="off"
-                            inputMode="decimal"
-                        />
-                        <button type="button" className="button" onClick={applyAeBulkPrice} style={{ marginLeft: '8px' }}>Update</button>
-
-                    </div>
-                    <div className="controls" style={{ marginTop: '8px' }}>
-                        <button type="button" className="button" onClick={() => setShowOosSearch(v => !v)}>
-                            {showOosSearch ? 'Ẩn tìm theo handle' : 'Tìm theo handle'}
-                        </button>
-                    </div>
-                    {showOosSearch && (
-                        <div className="controls" style={{ marginTop: '8px' }}>
-                            <input
-                                id="oosHandles"
-                                className="input"
-                                value={oosHandles}
-                                onChange={(e) => setOosHandles(e.target.value)}
-                                placeholder="[Mã card]-[rarity] Ví dụ: duad-ae062-ser, duad-ae062-u"
-                                autoComplete="off"
-                            />
-                            <button type="button" className="button" onClick={async () => {
-                                const handles = oosHandles.split(',').map(s => s.trim()).filter(Boolean)
-                                if (handles.length === 0) return
-                                setAeLoading(true)
-                                setAeError(null)
-                                try {
-                                    const rows = []
-                                    for (const h of handles) {
-                                        const r = await fetch(`${__API_URL__}/api/tcg-corner/product?q=${encodeURIComponent(h)}`)
-                                        if (!r.ok) {
-                                            rows.push({ ok: false, setcode: h, status: r.status, error: 'Fetch product .js failed' })
-                                            continue
-                                        }
-                                        const json = await r.json()
-                                        const p = json?.product
-                                        if (!p) {
-                                            rows.push({ ok: false, setcode: h, error: 'Invalid product' })
-                                            continue
-                                        }
-                                        // Try to infer set code and rarity from handle or title
-                                        const handle = p.handle || ''
-                                        const title = p.title || ''
-                                        const matchCode = title.match(/([A-Z0-9]+-[A-Z]{2}\d{3})/i)
-                                        const set_code = matchCode ? matchCode[1].toUpperCase() : ''
-                                        const rarityMatch = title.match(/\(([^)]+)\)/)
-                                        const rarity = rarityMatch ? rarityMatch[1] : ''
-                                        rows.push({
-                                            ok: true,
-                                            setcode: set_code || h,
-                                            data: {
-                                                source: 'tcg-corner-oos',
-                                                name: title.replace(/\s*\([^)]*\)\s*$/, ''),
-                                                set_code,
-                                                rarity,
-                                                set_price: p.price || p.price_min || p.price_max || 'N/A',
-                                                products: [p],
-                                                image: p.image,
-                                                sold_out: p.sold_out
-                                            }
-                                        })
-                                    }
-                                    // append to AE results table
-                                    const prev = aeResults?.results || []
-                                    setAeResults({ results: [...prev, ...rows] })
-                                } catch (e) {
-                                    setAeError(String(e))
-                                } finally {
-                                    setAeLoading(false)
+                <AEForm
+                    setcodes={setcodes}
+                    setSetcodes={setSetcodes}
+                    aePriceExtra={aePriceExtra}
+                    setAePriceExtra={setAePriceExtra}
+                    showOosSearch={showOosSearch}
+                    setShowOosSearch={setShowOosSearch}
+                    oosHandles={oosHandles}
+                    setOosHandles={setOosHandles}
+                    aeLoading={aeLoading}
+                    onSubmit={fetchInfo}
+                    onApplyBulkPrice={applyAeBulkPrice}
+                    onFetchOos={async () => {
+                        const handles = oosHandles.split(',').map(s => s.trim()).filter(Boolean)
+                        if (handles.length === 0) return
+                        setAeLoading(true)
+                        setAeError(null)
+                        try {
+                            const rows = []
+                            for (const h of handles) {
+                                const r = await fetch(`${__API_URL__}/api/tcg-corner/product?q=${encodeURIComponent(h)}`)
+                                if (!r.ok) {
+                                    rows.push({ ok: false, setcode: h, status: r.status, error: 'Fetch product .js failed' })
+                                    continue
                                 }
-                            }} style={{ marginLeft: '8px' }}>Fetch OOS</button>
-                        </div>
-                    )}
-                    <p className="hint">Use commas to separate multiple set codes. Cards with "AE" will search TCG Corner.</p>
-                </form>
+                                const json = await r.json()
+                                const p = json?.product
+                                if (!p) {
+                                    rows.push({ ok: false, setcode: h, error: 'Invalid product' })
+                                    continue
+                                }
+                                const title = p.title || ''
+                                const matchCode = title.match(/([A-Z0-9]+-[A-Z]{2}\d{3})/i)
+                                const set_code = matchCode ? matchCode[1].toUpperCase() : ''
+                                const rarityMatch = title.match(/\(([^)]+)\)/)
+                                const rarity = rarityMatch ? rarityMatch[1] : ''
+                                rows.push({
+                                    ok: true,
+                                    setcode: set_code || h,
+                                    data: {
+                                        source: 'tcg-corner-oos',
+                                        name: title.replace(/\s*\([^)]*\)\s*$/, ''),
+                                        set_code,
+                                        rarity,
+                                        set_price: p.price || p.price_min || p.price_max || 'N/A',
+                                        products: [p],
+                                        image: p.image,
+                                        sold_out: p.sold_out
+                                    }
+                                })
+                            }
+                            const prev = aeResults?.results || []
+                            setAeResults({ results: [...prev, ...rows] })
+                        } catch (e) {
+                            setAeError(String(e))
+                        } finally {
+                            setAeLoading(false)
+                        }
+                    }}
+                />
             )}
 
             {/* TCG Cards Form */}
             {activeTab === 'tcg' && (
-                <form className="search" onSubmit={fetchTCGCard}>
-                    <div className="controls">
-                        <input
-                            id="cardName"
-                            className="input"
-                            value={cardName}
-                            onChange={(e) => setCardName(e.target.value)}
-                            placeholder="VD: MP25-EN021, MP25-EN025"
-                            autoComplete="off"
-                        />
-                        <button type="submit" className="button" disabled={tcgLoading}>
-                            {tcgLoading ? 'Loading...' : 'Search'}
-                        </button>
-                    </div>
-                    <div className="controls" style={{ marginTop: '8px' }}>
-                        <input
-                            id="tcgRate"
-                            className="input"
-                            style={{ maxWidth: '220px' }}
-                            value={tcgRate}
-                            onChange={(e) => setTcgRate(e.target.value)}
-                            placeholder="USD → VND rate (e.g. 25000)"
-                            autoComplete="off"
-                            inputMode="numeric"
-                        />
-                        <button type="button" className="button" onClick={applyTcgRate} style={{ marginLeft: '8px' }}>Apply</button>
-                    </div>
-                    <p className="hint">Enter one or multiple print codes, separated by commas.</p>
-                </form>
+                <TCGForm
+                    cardName={cardName}
+                    setCardName={setCardName}
+                    tcgRate={tcgRate}
+                    setTcgRate={setTcgRate}
+                    tcgLoading={tcgLoading}
+                    onSubmit={fetchTCGCard}
+                    onApplyRate={applyTcgRate}
+                />
             )}
 
             {currentError && (
@@ -1131,7 +1086,7 @@ function App() {
                                                 <td>{isMultiRarityForSet ? 'Rarity' : ''}</td>
                                                 <td>{isMultiRarityForSet ? (d.rarity || '-') : ''}</td>
                                                 <td className="image-cell">
-                                                    {cardImage ? (
+                                                    {isMultiRarityForSet && cardImage ? (
                                                         <img
                                                             src={cardImage}
                                                             alt={d.name}
@@ -1147,9 +1102,7 @@ function App() {
                                                                 e.target.nextSibling.style.display = 'block';
                                                             }}
                                                         />
-                                                    ) : (
-                                                        <span style={{ color: '#666', fontSize: '10px' }}>Không có hình</span>
-                                                    )}
+                                                    ) : null}
                                                 </td>
                                                 <td className="price-cell">{price}</td>
                                                 <td className="image-cell">
