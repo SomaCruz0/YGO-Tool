@@ -186,24 +186,6 @@ Input: ALIN-AE002, MP25-EN021
 Kết quả: Thẻ AE từ TCG Corner, thẻ TCG từ JustTCG
 ```
 
-## 📁 Cấu trúc dự án
-
-```
-YGO-Tool/
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── App.jsx        # Component chính
-│   │   ├── main.jsx       # Entry point React
-│   │   └── style.css      # Styles ứng dụng
-│   ├── package.json       # Dependencies frontend
-│   └── vite.config.js     # Cấu hình Vite
-├── server/                # Node.js backend
-│   ├── index.js          # Express server
-│   ├── package.json      # Dependencies backend
-│   └── .env              # Environment variables (tùy chọn)
-└── README.md             # File này
-```
-
 ## 🔧 Chi tiết kỹ thuật
 
 ### Tự động chọn API
