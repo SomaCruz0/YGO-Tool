@@ -1,6 +1,19 @@
 # YGO-Tool
 
-Ứng dụng web tra cứu thông tin thẻ bài Yu-Gi-Oh! từ nhiều nguồn khác nhau với khả năng tự động phát hiện độ hiếm và xuất file Excel.
+Ứng dụng web tra cứu thông tin thẻ bài Yu-Gi-Oh! từ nhiều nguồn khác nhau, tự động phát hiện độ hiếm và xuất file Excel.
+
+## 🎯 Mục đích (dành cho seller Shopee)
+
+YGO-Tool được thiết kế để giúp seller Shopee mảng Yu-Gi-Oh! đăng sản phẩm nhanh chóng:
+- Nhập hàng loạt mã thẻ/print code (có thể nhập nhiều mã, phân cách bằng dấu phẩy)
+- Hệ thống tự tra cứu, chuẩn hóa dữ liệu (tên, set, rarity, giá, hình ảnh)
+- Xuất ra 1 file Excel theo cấu trúc phù hợp để import hàng loạt lên Shopee
+
+Quy trình nhanh:
+1) Chọn tab phù hợp (AE hoặc TCG)
+2) Dán danh sách mã (ví dụ: `ALIN-AE002, DUAD-AE001` hoặc `MP25-EN021, MP25-EN025`)
+3) Bấm Search → kiểm tra bảng kết quả (có thể xóa dòng riêng lẻ nếu cần)
+4) Bấm “Export Excel” → tải file và import vào Shopee theo chức năng đăng hàng loạt
 
 ## ✨ Tính năng chính
 
@@ -39,6 +52,10 @@
 - **Dữ liệu có cấu trúc**: Bao gồm tất cả thông tin thẻ bài được định dạng
 - **Tự động đặt tên**: File được đặt tên theo ngày hiện tại
 - **Định dạng chuyên nghiệp**: Cột rộng phù hợp, dữ liệu được sắp xếp rõ ràng
+
+Lưu ý cho Shopee:
+- Khi 1 mã chỉ có 1 rarity, cột “Tên nhóm phân loại hàng 1”, “Tên phân loại hàng cho nhóm phân loại hàng 1” và “Hình ảnh mỗi phân loại” sẽ để trống để đơn giản form đăng.
+- Với nhiều rarity cho cùng set code, công cụ sẽ nhóm theo mã và hiển thị phân loại “Rarity” cùng ảnh từng phân loại để import dạng biến thể.
 
 ### 💰 Tính năng giá cả
 - **Cập nhật giá hàng loạt**: Thêm/sửa giá cho nhiều thẻ cùng lúc (AE Cards)
